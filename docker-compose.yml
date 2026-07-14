@@ -1,0 +1,16 @@
+services:
+    app:
+        build: .
+        ports:
+            - '8000:8000'
+        environment:
+            APP_ENV: local
+            APP_DEBUG: 'true'
+            APP_URL: http://localhost:8000
+            DB_CONNECTION: sqlite
+            DB_DATABASE: /var/lib/vouchers/vouchers.db
+        volumes:
+            - vouchers-db:/var/lib/vouchers
+
+volumes:
+    vouchers-db:
