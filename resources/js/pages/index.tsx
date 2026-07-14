@@ -1,5 +1,5 @@
 import { Head } from '@inertiajs/react';
-import VoucherForm from '@/components/voucher-form';
+import VoucherForm from '@/components/VoucherForm';
 
 export default function Index() {
     return (

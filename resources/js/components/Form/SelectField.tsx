@@ -7,6 +7,7 @@ import {
 } from '@headlessui/react';
 import { ChevronUpDownIcon } from '@heroicons/react/16/solid';
 import { CheckIcon } from '@heroicons/react/20/solid';
+import { cn } from '@/lib/utils';
 
 export interface SelectOption<T extends string = string> {
     value: T;
@@ -20,6 +21,7 @@ interface SelectFieldProps<T extends string> {
     value: T;
     onChange: (value: T) => void;
     placeholder?: string;
+    error?: string;
 }
 
 export default function SelectField<T extends string>({
@@ -29,17 +31,24 @@ export default function SelectField<T extends string>({
     value,
     onChange,
     placeholder = 'Select an option',
+    error,
 }: SelectFieldProps<T>) {
     const selected = options.find((option) => option.value === value);
 
     return (
-        <Listbox value={value} onChange={onChange}>
+        <Listbox value={value} onChange={onChange} name={name}>
             <Label className="block text-sm/6 font-medium text-gray-900">
                 {label}
             </Label>
             <div className="relative mt-2">
-                <input type="hidden" name={name} value={value} />
-                <ListboxButton className="grid w-full cursor-default grid-cols-1 rounded-md bg-white py-1.5 pr-2 pl-3 text-left text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-indigo-600 sm:text-sm/6">
+                <ListboxButton
+                    aria-invalid={error ? true : undefined}
+                    className={cn(
+                        'grid w-full cursor-default grid-cols-1 rounded-md bg-white py-1.5 pr-2 pl-3 text-left text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-indigo-600 sm:text-sm/6',
+                        error &&
+                            'outline-red-500 focus-visible:outline-red-600',
+                    )}
+                >
                     <span className="col-start-1 row-start-1 block truncate pr-6">
                         {selected?.label ?? placeholder}
                     </span>
@@ -73,6 +82,7 @@ export default function SelectField<T extends string>({
                     ))}
                 </ListboxOptions>
             </div>
+            {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
         </Listbox>
     );
 }

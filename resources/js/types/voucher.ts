@@ -1,12 +1,4 @@
-import type { SelectOption } from '@/components/form/select-field';
-
-export type AircraftType = 'ATR' | 'Airbus 320' | 'Boeing 737 Max';
-
-export const AIRCRAFT_TYPES: readonly SelectOption<AircraftType>[] = [
-    { value: 'ATR', label: 'ATR' },
-    { value: 'Airbus 320', label: 'Airbus 320' },
-    { value: 'Boeing 737 Max', label: 'Boeing 737 Max' },
-];
+import type { AircraftType } from '@/lib/aircraft';
 
 export interface VoucherFormData {
     name: string;
@@ -14,4 +6,23 @@ export interface VoucherFormData {
     flightNumber: string;
     date: string;
     aircraft: AircraftType;
+}
+
+export interface VoucherCheckData {
+    flightNumber: string;
+    date: string;
+}
+
+export interface VoucherCheckResponse {
+    exists: boolean;
+}
+
+export interface VoucherResponse {
+    success: boolean;
+    seats: string[];
+}
+
+export interface VoucherErrorResponse {
+    success: false;
+    message: string;
 }
