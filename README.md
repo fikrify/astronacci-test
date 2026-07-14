@@ -45,7 +45,7 @@ npm run dev
 
 Open <http://localhost:5173>.
 
-By default the API reads and writes `backend/database/vouchers.db`. To store the database elsewhere, set an absolute path in `backend/.env`:
+By default the API reads and writes `backend/database/vouchers.db` — that path is the fallback in `backend/config/database.php`, so no `.env` entry is needed. To store the database elsewhere, set an absolute path in `backend/.env`:
 
 ```dotenv
 DB_CONNECTION=sqlite
@@ -120,11 +120,11 @@ Generates 3 unique random seats for the aircraft, persists the record, and retur
 { "success": true, "seats": ["3B", "7C", "14D"] }
 ```
 
-**Error responses**
+**Error responses** — both endpoints
 
 | Status | When | Body |
 | --- | --- | --- |
-| `409 Conflict` | The flight already has vouchers on that date | `{ "success": false, "message": "Vouchers have already been generated for flight ID102 on 2025-07-12." }` |
+| `409 Conflict` | `/api/generate` only: the flight already has vouchers on that date | `{ "success": false, "message": "Vouchers have already been generated for flight ID102 on 2025-07-12." }` |
 | `422 Unprocessable Entity` | Validation failed | `{ "message": "…", "errors": { "aircraft": ["The aircraft type must be one of: ATR, Airbus 320, Boeing 737 Max."] } }` |
 
 Duplicates are blocked twice over: the controller checks before writing, and a composite unique index on `flight_number + flight_date` catches concurrent requests that slip past the check. Both paths return the same `409`.
@@ -189,9 +189,20 @@ frontend/
 
 ## How the frontend flow works
 
-1. The crew fills in name, ID, flight number, flight date and aircraft type.
-2. **Generate** first calls `POST /api/check`.
-3. If `exists` is `false`, it calls `POST /api/generate` and shows the 3 seats.
-4. If `exists` is `true`, it shows an error explaining that this flight already has vouchers for that date.
+The crew fills in one form:
+
+| Field | Input | Notes |
+| --- | --- | --- |
+| Crew Name | Text | Required |
+| Crew ID | Text | Required |
+| Flight Number | Text | Required, e.g. `GA102` |
+| Flight Date | Date picker | Required, `DD-MM-YYYY` |
+| Aircraft Type | Dropdown | `ATR`, `Airbus 320`, `Boeing 737 Max` |
+
+Pressing **Generate**:
+
+1. Calls `POST /api/check`.
+2. If `exists` is `false`, calls `POST /api/generate` and shows the 3 seats.
+3. If `exists` is `true`, shows an error explaining that this flight already has vouchers for that date.
 
 Field-level validation errors from the API are rendered under the relevant input; everything else surfaces in the result dialog.
