@@ -21,15 +21,16 @@ class VoucherFactory extends Factory
      */
     public function definition(): array
     {
-        $aircraftType = fake()->randomElement(['ATR', 'Airbus 320', 'Boeing 737 Max']);
+        $seatGenerator = app(SeatGeneratorService::class);
+        $aircraftType = fake()->randomElement($seatGenerator->supportedAircraftTypes());
 
         return [
-            'crew_id' => (string) fake()->numberBetween(10000, 99999),
             'crew_name' => fake()->firstName(),
+            'crew_id' => (string) fake()->numberBetween(10000, 99999),
             'flight_number' => fake()->randomElement(['GA', 'ID', 'QG']).fake()->numberBetween(100, 999),
             'flight_date' => fake()->dateTimeBetween('now', '+1 month')->format('Y-m-d'),
             'aircraft_type' => $aircraftType,
-            'seats' => app(SeatGeneratorService::class)->generateSeats($aircraftType),
+            'seats' => $seatGenerator->generateSeats($aircraftType),
         ];
     }
 }

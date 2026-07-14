@@ -13,12 +13,14 @@ return new class extends Migration
     {
         Schema::create('vouchers', function (Blueprint $table) {
             $table->id();
-            $table->string('crew_id');
             $table->string('crew_name');
+            $table->string('crew_id');
             $table->string('flight_number');
-            $table->date('flight_date');
-            $table->enum('aircraft_type', ['ATR', 'Airbus 320', 'Boeing 737 Max']);
-            $table->json('seats');
+            $table->string('flight_date');
+            $table->string('aircraft_type');
+            $table->string('seat1');
+            $table->string('seat2');
+            $table->string('seat3');
             $table->timestamps();
 
             $table->unique(['flight_number', 'flight_date']);

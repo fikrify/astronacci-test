@@ -24,8 +24,8 @@ class VoucherController extends Controller
     public function check(CheckVoucherRequest $request): VoucherCheckResource
     {
         $exists = $this->seatGeneratorService->hasExistingVouchers(
-            $request->string('flightNumber')->toString(),
-            $request->string('date')->toString(),
+            $request->flightNumber,
+            $request->flightDate(),
         );
 
         return new VoucherCheckResource($exists);
@@ -39,7 +39,7 @@ class VoucherController extends Controller
     public function generate(GenerateVoucherRequest $request): VoucherResource
     {
         $flightNumber = $request->flightNumber;
-        $flightDate = $request->date;
+        $flightDate = $request->flightDate();
         $aircraftType = $request->aircraft;
 
         if ($this->seatGeneratorService->hasExistingVouchers($flightNumber, $flightDate)) {
