@@ -1,16 +1,27 @@
 services:
-    app:
-        build: .
+    backend:
+        build: ./backend
         ports:
             - '8000:8000'
         environment:
             APP_ENV: local
             APP_DEBUG: 'true'
             APP_URL: http://localhost:8000
+            FRONTEND_URL: http://localhost:5173
             DB_CONNECTION: sqlite
             DB_DATABASE: /var/lib/vouchers/vouchers.db
         volumes:
             - vouchers-db:/var/lib/vouchers
+
+    frontend:
+        build:
+            context: ./frontend
+            args:
+                VITE_API_URL: http://localhost:8000
+        ports:
+            - '5173:5173'
+        depends_on:
+            - backend
 
 volumes:
     vouchers-db:

@@ -2,11 +2,14 @@
 
 A web application for an airline promotional campaign. Crew members enter the flight details and the app assigns **3 random, non-repeating seats** that are valid for the selected aircraft, storing the result so the same flight can never be assigned vouchers twice on the same date.
 
-- **Backend:** Laravel 13 (PHP 8.3) REST API
-- **Frontend:** React 19 + TypeScript + Tailwind CSS, served through Inertia.js
-- **Database:** SQLite (`database/vouchers.db`)
+The repository holds two deployables:
 
-The React app and the Laravel API are one deployable served from the same origin (Inertia), so no CORS configuration is required. See [Project structure](#project-structure) for where each part lives.
+| Folder | What it is |
+| --- | --- |
+| [`backend/`](backend) | Laravel 13 (PHP 8.3) REST API, SQLite database |
+| [`frontend/`](frontend) | React 19 + TypeScript + Tailwind CSS single page app (Vite) |
+
+They are served from different origins and talk over HTTP, so the API allows the SPA's origin through CORS (`FRONTEND_URL` on the backend, `VITE_API_URL` on the frontend).
 
 ---
 
@@ -24,51 +27,29 @@ The React app and the Laravel API are one deployable served from the same origin
 ## Setup
 
 ```bash
-# 1. Install dependencies
+# Backend — API on http://localhost:8000
+cd backend
 composer install
-npm install
-
-# 2. Configure the environment
 cp .env.example .env
 php artisan key:generate
-
-# 3. Create the SQLite database and run the migrations
 touch database/vouchers.db
 php artisan migrate
-```
-
-By default the app reads and writes `database/vouchers.db`. To store the database elsewhere, set an absolute path in `.env`:
-
-```dotenv
-DB_CONNECTION=sqlite
-DB_DATABASE=/absolute/path/to/database/vouchers.db
-```
-
----
-
-## Running the app
-
-```bash
-# Terminal 1 — Laravel API + page server
 php artisan serve
 
-# Terminal 2 — Vite dev server (React hot reload)
+# Frontend — SPA on http://localhost:5173 (second terminal)
+cd frontend
+npm install
+cp .env.example .env
 npm run dev
 ```
 
-Open <http://localhost:8000>.
+Open <http://localhost:5173>.
 
-For a single command that runs both, plus the queue listener and logs:
+By default the API reads and writes `backend/database/vouchers.db`. To store the database elsewhere, set an absolute path in `backend/.env`:
 
-```bash
-composer run dev
-```
-
-To serve a production build instead of the Vite dev server:
-
-```bash
-npm run build
-php artisan serve
+```dotenv
+DB_CONNECTION=sqlite
+DB_DATABASE=/absolute/path/to/vouchers.db
 ```
 
 ---
@@ -79,32 +60,35 @@ php artisan serve
 docker compose up --build
 ```
 
-The container installs dependencies, builds the frontend, creates the SQLite database, runs the migrations and serves the app on <http://localhost:8000>. The database lives in a named volume, so it survives restarts.
+Two containers: the API on <http://localhost:8000> (SQLite in a named volume, so it survives restarts) and the SPA behind nginx on <http://localhost:5173>. The API origin is baked into the frontend bundle at build time through the `VITE_API_URL` build argument in `docker-compose.yml`.
 
 ---
 
 ## Tests
 
 ```bash
-php artisan test
+cd backend && php artisan test
 ```
 
-Covers the seat generator (seat maps per aircraft, uniqueness, invalid aircraft), both API endpoints (happy path, duplicate rejection, validation, the unique-constraint race), the home page, and architecture rules.
+Covers the seat generator (seat maps per aircraft, uniqueness, invalid aircraft), both API endpoints (happy path, duplicate rejection, validation, the unique-constraint race), and architecture rules.
 
 Other quality gates:
 
 ```bash
-vendor/bin/pint          # PHP formatting
-vendor/bin/phpstan analyse   # Static analysis (Larastan, level max)
-npm run lint:check       # ESLint
-npm run types:check      # TypeScript
+cd backend
+vendor/bin/pint             # PHP formatting
+vendor/bin/phpstan analyse  # Static analysis (Larastan, level 7)
+
+cd frontend
+npm run lint                # Oxlint
+npm run types:check         # TypeScript
 ```
 
 ---
 
 ## API
 
-Both endpoints are defined in `routes/api.php` and validated by Form Request classes.
+Both endpoints are defined in `backend/routes/api.php` and validated by Form Request classes.
 
 ### `POST /api/check`
 
@@ -161,7 +145,7 @@ Generated seats are always valid for the selected aircraft — an ATR never yiel
 
 ## Database schema
 
-`vouchers` table (see `database/migrations/*_create_vouchers_table.php`):
+`vouchers` table (see `backend/database/migrations/*_create_vouchers_table.php`):
 
 | Column | Type | Notes |
 | --- | --- | --- |
@@ -181,26 +165,24 @@ The `Voucher` model exposes the three seat columns as a single `seats` array att
 ## Project structure
 
 ```
-app/
-├── Exceptions/          # VoucherAlreadyGenerated, InsufficientSeats (render their own JSON)
-├── Http/
-│   ├── Controllers/     # VoucherController — check + generate
-│   ├── Requests/        # Form Requests with custom error messages
-│   └── Resources/       # API Resources for consistent JSON
-├── Models/              # Voucher
-└── Services/            # SeatGeneratorService — seat maps and random selection
-database/
-├── factories/
-└── migrations/
-resources/js/            # React frontend
-├── components/          # VoucherForm, VoucherResultModal, form fields
-├── hooks/               # useVoucherGenerator — drives check → generate
-└── pages/               # Inertia page components
-routes/
-└── api.php              # POST /api/check, POST /api/generate
-tests/
-├── Feature/
-└── Unit/
+backend/
+├── app/
+│   ├── Exceptions/          # VoucherAlreadyGenerated, InsufficientSeats (render their own JSON)
+│   ├── Http/
+│   │   ├── Controllers/     # VoucherController — check + generate
+│   │   ├── Requests/        # Form Requests with custom error messages
+│   │   └── Resources/       # API Resources for consistent JSON
+│   ├── Models/              # Voucher
+│   └── Services/            # SeatGeneratorService — seat maps and random selection
+├── database/                # migrations, factories
+├── routes/api.php           # POST /api/check, POST /api/generate
+└── tests/                   # Feature + Unit (Pest)
+frontend/
+└── src/
+    ├── components/          # VoucherForm, VoucherResultModal, form fields
+    ├── hooks/               # useVoucherGenerator — drives check → generate
+    ├── lib/                 # api.ts (fetch client), aircraft.ts, utils.ts
+    └── App.tsx              # the page
 ```
 
 ---
