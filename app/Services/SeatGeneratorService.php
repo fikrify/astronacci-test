@@ -16,10 +16,10 @@ class SeatGeneratorService
     protected array $aircrafts = [
         'ATR' => [
             'rows' => 18,
-            'columns' => ['A', 'B', 'C', 'D'],
+            'columns' => ['A', 'C', 'D', 'F'],
         ],
         'Airbus 320' => [
-            'rows' => 30,
+            'rows' => 32,
             'columns' => ['A', 'B', 'C', 'D', 'E', 'F'],
         ],
         'Boeing 737 Max' => [
@@ -27,6 +27,16 @@ class SeatGeneratorService
             'columns' => ['A', 'B', 'C', 'D', 'E', 'F'],
         ],
     ];
+
+    /**
+     * The aircraft types this service knows how to generate seats for.
+     *
+     * @return list<string>
+     */
+    public function supportedAircraftTypes(): array
+    {
+        return array_keys($this->aircrafts);
+    }
 
     /**
      * Pick unique random seats from the aircraft's seat map.
@@ -49,11 +59,17 @@ class SeatGeneratorService
         return array_slice($seats, 0, $count);
     }
 
+    /**
+     * Whether a flight already has vouchers assigned on the given date.
+     *
+     * The date must be normalised to Y-m-d, the same format the unique
+     * flight_number + flight_date constraint is enforced on.
+     */
     public function hasExistingVouchers(string $flightNumber, string $flightDate): bool
     {
         return Voucher::query()
             ->where('flight_number', $flightNumber)
-            ->whereDate('flight_date', $flightDate)
+            ->where('flight_date', $flightDate)
             ->exists();
     }
 

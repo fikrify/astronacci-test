@@ -15,10 +15,16 @@ it('builds the full seat map for every supported aircraft', function (string $ai
         ->and($seats[0])->toBe($firstSeat)
         ->and($seats[$expectedCount - 1])->toBe($lastSeat);
 })->with([
-    'ATR' => ['ATR', 72, '1A', '18D'],
-    'Airbus 320' => ['Airbus 320', 180, '1A', '30F'],
+    'ATR' => ['ATR', 72, '1A', '18F'],
+    'Airbus 320' => ['Airbus 320', 192, '1A', '32F'],
     'Boeing 737 Max' => ['Boeing 737 Max', 192, '1A', '32F'],
 ]);
+
+it('never puts a passenger in a seat column the aircraft does not have', function () {
+    expect($this->seatGenerator->seatMapFor('ATR'))
+        ->not->toContain('5B')
+        ->not->toContain('5E');
+});
 
 it('rejects an unknown aircraft type', function () {
     expect(fn () => $this->seatGenerator->seatMapFor('Concorde'))

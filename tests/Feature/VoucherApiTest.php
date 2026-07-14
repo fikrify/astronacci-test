@@ -56,7 +56,8 @@ it('generates three unique seats and persists them', function () {
         ->and($voucher->crew_id)->toBe('98123')
         ->and($voucher->flight_number)->toBe('ID102')
         ->and($voucher->aircraft_type)->toBe('Airbus 320')
-        ->and($voucher->flight_date->toDateString())->toBe('2025-07-12')
+        ->and($voucher->flight_date)->toBe('2025-07-12')
+        ->and([$voucher->seat1, $voucher->seat2, $voucher->seat3])->toBe($seats)
         ->and($voucher->seats)->toBe($seats);
 });
 
@@ -100,6 +101,18 @@ it('validates the generate payload', function () {
     $this->postJson('/api/generate', [])
         ->assertUnprocessable()
         ->assertInvalid(['name', 'id', 'flightNumber', 'date', 'aircraft']);
+});
+
+it('returns the custom validation messages', function () {
+    $this->postJson('/api/generate', [])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors([
+            'name' => 'The crew name is required.',
+            'id' => 'The crew ID is required.',
+            'flightNumber' => 'A flight number is required, for example GA102.',
+            'date' => 'A flight date is required.',
+            'aircraft' => 'An aircraft type is required.',
+        ]);
 });
 
 it('rejects an unsupported aircraft type', function () {
