@@ -2,6 +2,7 @@
 
 use App\Models\Voucher;
 use App\Services\SeatGeneratorService;
+use Mockery\MockInterface;
 
 it('reports that no vouchers exist for an unassigned flight', function () {
     $response = $this->postJson('/api/check', [
@@ -109,4 +110,54 @@ it('rejects an unsupported aircraft type', function () {
         'date' => '2025-07-12',
         'aircraft' => 'Concorde',
     ])->assertUnprocessable()->assertInvalid(['aircraft']);
+});
+
+it('rejects a malformed date', function (string $endpoint, array $payload) {
+    $this->postJson($endpoint, [...$payload, 'date' => 'not-a-date'])
+        ->assertUnprocessable()
+        ->assertInvalid(['date']);
+})->with([
+    'check' => ['/api/check', ['flightNumber' => 'ID102']],
+    'generate' => ['/api/generate', [
+        'name' => 'Sarah',
+        'id' => '98123',
+        'flightNumber' => 'ID102',
+        'aircraft' => 'ATR',
+    ]],
+]);
+
+it('generates seats belonging to the requested aircraft', function (string $aircraftType) {
+    $response = $this->postJson('/api/generate', [
+        'name' => 'Sarah',
+        'id' => '98123',
+        'flightNumber' => 'ID102',
+        'date' => '2025-07-12',
+        'aircraft' => $aircraftType,
+    ])->assertCreated();
+
+    expect($response->json('seats'))
+        ->each->toBeIn(app(SeatGeneratorService::class)->seatMapFor($aircraftType));
+
+    expect(Voucher::sole()->aircraft_type)->toBe($aircraftType);
+})->with(['ATR', 'Airbus 320', 'Boeing 737 Max']);
+
+it('falls back to the unique constraint when two requests race', function () {
+    Voucher::factory()->create([
+        'flight_number' => 'ID102',
+        'flight_date' => '2025-07-12',
+    ]);
+
+    $this->partialMock(SeatGeneratorService::class, function (MockInterface $mock) {
+        $mock->shouldReceive('hasExistingVouchers')->andReturnFalse();
+    });
+
+    $this->postJson('/api/generate', [
+        'name' => 'Sarah',
+        'id' => '98123',
+        'flightNumber' => 'ID102',
+        'date' => '2025-07-12',
+        'aircraft' => 'Airbus 320',
+    ])->assertConflict()->assertJson(['success' => false]);
+
+    expect(Voucher::count())->toBe(1);
 });
