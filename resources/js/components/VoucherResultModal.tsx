@@ -37,28 +37,23 @@ export default function VoucherResultModal({
                 )
             }
             footer={
-                <Button
-                    variant="secondary"
-                    data-autofocus
-                    onClick={onClose}
-                    className="sm:w-auto"
-                >
+                <Button data-autofocus onClick={onClose}>
                     Close
                 </Button>
             }
         >
             {failed ? (
-                <p className="text-sm text-gray-500">{errorMessage}</p>
+                <p className="text-sm/6 text-white/50">{errorMessage}</p>
             ) : (
                 <>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm/6 text-white/50">
                         These seats are reserved for the crew on this flight.
                     </p>
                     <ul className="mt-4 flex flex-wrap gap-2">
                         {seats?.map((seat) => (
                             <li
                                 key={seat}
-                                className="rounded-md bg-indigo-50 px-3 py-1.5 text-sm font-semibold text-indigo-700 inset-ring inset-ring-indigo-200"
+                                className="rounded-md bg-white/5 px-3 py-1.5 text-sm font-semibold text-white inset-ring inset-ring-white/10"
                             >
                                 {seat}
                             </li>

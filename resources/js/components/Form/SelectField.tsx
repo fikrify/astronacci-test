@@ -1,12 +1,13 @@
 import {
+    Combobox,
+    ComboboxButton,
+    ComboboxInput,
+    ComboboxOption,
+    ComboboxOptions,
+    Field,
     Label,
-    Listbox,
-    ListboxButton,
-    ListboxOption,
-    ListboxOptions,
 } from '@headlessui/react';
-import { ChevronUpDownIcon } from '@heroicons/react/16/solid';
-import { CheckIcon } from '@heroicons/react/20/solid';
+import { CheckIcon, ChevronDownIcon } from '@heroicons/react/20/solid';
 import { cn } from '@/lib/utils';
 
 export interface SelectOption<T extends string = string> {
@@ -33,56 +34,66 @@ export default function SelectField<T extends string>({
     placeholder = 'Select an option',
     error,
 }: SelectFieldProps<T>) {
-    const selected = options.find((option) => option.value === value);
-
     return (
-        <Listbox value={value} onChange={onChange} name={name}>
-            <Label className="block text-sm/6 font-medium text-gray-900">
-                {label}
-            </Label>
-            <div className="relative mt-2">
-                <ListboxButton
-                    aria-invalid={error ? true : undefined}
+        <Field>
+            <Label className="text-sm/6 font-medium text-white">{label}</Label>
+            <Combobox
+                value={value}
+                onChange={(selected: T | null) =>
+                    selected && onChange(selected)
+                }
+                name={name}
+            >
+                <ComboboxButton as="div" className="group relative mt-3">
+                    <ComboboxInput
+                        readOnly
+                        aria-invalid={error ? true : undefined}
+                        placeholder={placeholder}
+                        className={cn(
+                            'w-full cursor-default rounded-lg border-none bg-white/5 py-1.5 pr-8 pl-3 text-sm/6 text-white placeholder:text-white/50',
+                            'focus:not-data-focus:outline-none data-focus:outline-2 data-focus:-outline-offset-2 data-focus:outline-white/25',
+                            error &&
+                                'outline-2 -outline-offset-2 outline-red-500 data-focus:outline-red-500',
+                        )}
+                        displayValue={(selected: T) =>
+                            options.find((option) => option.value === selected)
+                                ?.label ?? ''
+                        }
+                    />
+                    <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5">
+                        <ChevronDownIcon
+                            aria-hidden="true"
+                            className="size-4 fill-white/60 group-data-hover:fill-white"
+                        />
+                    </span>
+                </ComboboxButton>
+
+                <ComboboxOptions
+                    anchor="bottom"
+                    transition
                     className={cn(
-                        'grid w-full cursor-default grid-cols-1 rounded-md bg-white py-1.5 pr-2 pl-3 text-left text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-indigo-600 sm:text-sm/6',
-                        error &&
-                            'outline-red-500 focus-visible:outline-red-600',
+                        'z-10 max-h-56 w-(--input-width) rounded-xl border border-white/5 bg-neutral-800 p-1 [--anchor-gap:--spacing(1)] empty:invisible',
+                        'transition duration-100 ease-in data-leave:data-closed:opacity-0',
                     )}
                 >
-                    <span className="col-start-1 row-start-1 block truncate pr-6">
-                        {selected?.label ?? placeholder}
-                    </span>
-                    <ChevronUpDownIcon
-                        aria-hidden="true"
-                        className="col-start-1 row-start-1 size-5 self-center justify-self-end text-gray-500 sm:size-4"
-                    />
-                </ListboxButton>
-
-                <ListboxOptions
-                    transition
-                    className="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg outline-1 outline-black/5 data-leave:transition data-leave:duration-100 data-leave:ease-in data-closed:data-leave:opacity-0 sm:text-sm"
-                >
                     {options.map((option) => (
-                        <ListboxOption
+                        <ComboboxOption
                             key={option.value}
                             value={option.value}
-                            className="group relative cursor-default py-2 pr-9 pl-3 text-gray-900 select-none data-focus:bg-indigo-600 data-focus:text-white data-focus:outline-hidden"
+                            className="group flex cursor-default items-center gap-2 rounded-lg px-3 py-1.5 select-none data-focus:bg-white/10"
                         >
-                            <span className="block truncate font-normal group-data-selected:font-semibold">
+                            <CheckIcon
+                                aria-hidden="true"
+                                className="invisible size-4 fill-white group-data-selected:visible"
+                            />
+                            <div className="text-sm/6 text-white">
                                 {option.label}
-                            </span>
-
-                            <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600 group-not-data-selected:hidden group-data-focus:text-white">
-                                <CheckIcon
-                                    aria-hidden="true"
-                                    className="size-5"
-                                />
-                            </span>
-                        </ListboxOption>
+                            </div>
+                        </ComboboxOption>
                     ))}
-                </ListboxOptions>
-            </div>
-            {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
-        </Listbox>
+                </ComboboxOptions>
+            </Combobox>
+            {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
+        </Field>
     );
 }

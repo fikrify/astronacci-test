@@ -1,3 +1,4 @@
+import { Field, Input, Label } from '@headlessui/react';
 import type { ComponentPropsWithoutRef } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -16,34 +17,28 @@ export default function TextField({
     ...props
 }: TextFieldProps) {
     return (
-        <div>
-            <label
-                htmlFor={id}
-                className="block text-sm/6 font-medium text-gray-900"
-            >
-                {label}
-            </label>
-            <div className="mt-2">
-                <input
-                    id={id}
-                    name={props.name ?? id}
-                    type={type}
-                    aria-invalid={error ? true : undefined}
-                    aria-describedby={error ? `${id}-error` : undefined}
-                    className={cn(
-                        'block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6',
-                        error &&
-                            'outline-red-500 placeholder:text-red-400 focus:outline-red-600',
-                        className,
-                    )}
-                    {...props}
-                />
-            </div>
+        <Field>
+            <Label className="text-sm/6 font-medium text-white">{label}</Label>
+            <Input
+                id={id}
+                name={props.name ?? id}
+                type={type}
+                invalid={error ? true : undefined}
+                aria-describedby={error ? `${id}-error` : undefined}
+                className={cn(
+                    'mt-3 block w-full rounded-lg border-none bg-white/5 px-3 py-1.5 text-sm/6 text-white scheme-dark placeholder:text-white/50',
+                    'focus:not-data-focus:outline-none data-focus:outline-2 data-focus:-outline-offset-2 data-focus:outline-white/25',
+                    error &&
+                        'outline-2 -outline-offset-2 outline-red-500 data-focus:outline-red-500',
+                    className,
+                )}
+                {...props}
+            />
             {error && (
-                <p id={`${id}-error`} className="mt-2 text-sm text-red-600">
+                <p id={`${id}-error`} className="mt-2 text-sm text-red-400">
                     {error}
                 </p>
             )}
-        </div>
+        </Field>
     );
 }

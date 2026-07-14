@@ -1,31 +1,19 @@
+import { Button as HeadlessButton } from '@headlessui/react';
 import type { ComponentPropsWithoutRef } from 'react';
 import { cn } from '@/lib/utils';
 
-type ButtonVariant = 'primary' | 'secondary';
-
-interface ButtonProps extends ComponentPropsWithoutRef<'button'> {
-    variant?: ButtonVariant;
-}
-
-const variantStyles: Record<ButtonVariant, string> = {
-    primary:
-        'bg-indigo-600 text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600',
-    secondary:
-        'bg-white text-gray-900 shadow-xs inset-ring inset-ring-gray-300 hover:bg-gray-50',
-};
+type ButtonProps = ComponentPropsWithoutRef<'button'>;
 
 export default function Button({
-    variant = 'primary',
     className,
     type = 'button',
     ...props
 }: ButtonProps) {
     return (
-        <button
+        <HeadlessButton
             type={type}
             className={cn(
-                'flex w-full justify-center rounded-md px-3 py-1.5 text-sm/6 font-semibold disabled:cursor-not-allowed disabled:opacity-60',
-                variantStyles[variant],
+                'inline-flex items-center gap-2 rounded-md bg-neutral-700 px-3 py-1.5 text-sm/6 font-semibold text-white inset-shadow-sm inset-shadow-white/10 focus:not-data-focus:outline-none data-focus:outline data-focus:outline-white data-hover:bg-neutral-600 data-open:bg-neutral-700',
                 className,
             )}
             {...props}
