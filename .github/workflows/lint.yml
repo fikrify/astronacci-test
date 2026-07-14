@@ -30,22 +30,23 @@ jobs:
         with:
           php-version: '8.4'
 
-      - name: Install Dependencies
-        run: |
-          composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
-          npm install
+      - name: Setup Node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: '22'
+
+      - name: Install Backend Dependencies
+        working-directory: backend
+        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
+      - name: Install Frontend Dependencies
+        working-directory: frontend
+        run: npm ci
 
       - name: Run Pint
+        working-directory: backend
         run: composer lint
 
-      - name: Format Frontend
-        run: npm run format
-
       - name: Lint Frontend
+        working-directory: frontend
         run: npm run lint
-
-      # - name: Commit Changes
-      #   uses: stefanzweifel/git-auto-commit-action@v7
-      #   with:
-      #     commit_message: fix code style
-      #     commit_options: '--no-verify'
