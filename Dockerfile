@@ -2,14 +2,13 @@
 
 FROM php:8.3-cli-alpine
 
-RUN apk add --no-cache git unzip nodejs npm sqlite-libs \
-    && docker-php-ext-install pdo pdo_sqlite
+RUN apk add --no-cache git unzip nodejs npm
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 
-# Install dependencies first so they stay cached across source changes.
+# Install dependencies
 COPY composer.json composer.lock ./
 RUN composer install --no-interaction --no-scripts --no-autoloader --prefer-dist
 
