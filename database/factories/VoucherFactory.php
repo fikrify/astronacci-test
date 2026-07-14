@@ -16,6 +16,7 @@ class VoucherFactory extends Factory
      * Define the model's default state.
      *
      * @return array<string, mixed>
+     *
      * @throws InsufficientSeatsException
      */
     public function definition(): array

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string[] $seats
+ *
  * @method static static create(array<string, mixed> $attributes = [])
  * @method static count()
  * @method static sole()
